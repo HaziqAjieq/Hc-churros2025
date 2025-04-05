@@ -16,8 +16,8 @@ export default function Navbar(props) {
   }, [location])
 
   return (
-    <>
-      <nav className="fixed w-full sm:relative  z-50  grid grid-cols-8 max-h-auto max-w-7xl mx-auto bg-red lg:rounded-3xl rounded-b-2xl transform-fill ">
+   <div className="flex items-center justify-center ">
+      <nav className="fixed w-full   z-50  grid grid-cols-8 max-h-auto max-w-7xl mx-auto bg-red lg:rounded-3xl rounded-b-2xl transform-fill mt-23 sm:mt-27 ">
         {/* logoImg */}
         <div className=" col-span-2 col-start-1 flex items-center justify-center ">
           <img src={Logo} alt="" className="max-h-fit size-[7rem]" />
@@ -48,7 +48,7 @@ export default function Navbar(props) {
         </div>
         {/* adding menu button */}
         <button
-          className="col-start-6 col-span-4 text-3xl text-yellow sm:hidden"
+          className="col-start-7 col-span-4 text-3xl text-yellow sm:hidden"
           onClick={toggleDropdown} // Toggle dropdown on click
         >
           <i className="fa-solid fa-bars"></i>
@@ -56,8 +56,8 @@ export default function Navbar(props) {
       </nav>
       {/* dropdown menu */}
       {open && (
-        <div className={`fixed mt-34 z-50   bg-red w-full rounded-b-2xl shadow-lg rounded-t-2xl sm:hidden `} >
-          <ul className="flex flex-col items-center justify-cente gap-6 py-8">
+        <div className={`fixed pt-80 z-50  bg-red w-full rounded-b-2xl shadow-lg rounded-t-2xl sm:hidden `} >
+          <ul className="flex flex-col items-center justify-cente gap-6 py-8 ">
             <Link to='/'>
               <li><h1 className="text-light-gray text-xl">Home</h1></li>
             </Link>
@@ -72,6 +72,6 @@ export default function Navbar(props) {
           </ul>
         </div>
       )}
-    </>
+   </div>
   );
 }
