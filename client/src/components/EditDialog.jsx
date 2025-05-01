@@ -1,4 +1,4 @@
-import axios from 'axios';
+
 import { useState, useRef } from 'react';
 
 function EditDialog({ stall, onClose, onSave }) {
@@ -56,13 +56,14 @@ function EditDialog({ stall, onClose, onSave }) {
       }
 
       // If editing existing stall, include stall_id
-      if (stall?.stall_id) {
-        formDataToSend.append('stall_id', stall.stall_id);
-      }
+      await onSave({
+        formData: formData,
+        imageFile: fileInputRef.current?.files[0]
+      });
 
       // Call onSave with FormData
       await onSave(formDataToSend);
-      
+      onClose(); // Close after successful save
     } catch (err) {
       setError(err.message || 'Failed to save stall');
     } finally {

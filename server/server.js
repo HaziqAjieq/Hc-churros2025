@@ -1,23 +1,26 @@
-require("dotenv").config();
-const express = require("express");
-const mysql = require("mysql2/promise");
-const cors = require("cors");
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-// for user auth
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const { error } = require("console");
+import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
+import mysql from "mysql2/promise";
+import cors from "cors";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+
+// For __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:5174", // Changed to match typical React port
-  credentials: true,
+  origin: "http://localhost:5174", 
   allowedHeaders: ['Content-Type', 'Authorization' , 'X-Debug-Request' ],
   exposedHeaders: ['set-cookie']
 }));
@@ -26,18 +29,31 @@ app.use(cookieParser());
 
 
 // Database connection
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || 'hc_churros',
+export const pool = mysql.createPool({
+  host: process.env.DB_HOST ,
+  port: process.env.DB_PORT ,
+  user: process.env.DB_USER ,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME ,
   waitForConnections: true,
-  connectionLimit: 10,
   queueLimit: 0,
 });
 
 //__________________________________________________________________________________
+
+// /backend
+//   ├── config/
+//   │   ├── db.js
+//   │   └── passport.js
+//   ├── models/
+//   │   └── User.js
+//   ├── routes/
+//   │   ├── auth.js
+//   │   └── oauth.js
+//   └── server.js
+
+// Admin login endpoint
+
 
 
 
@@ -118,6 +134,8 @@ app.get("/api/stalls/:id", async (req, res) => {
 
 // Add new stall
 app.post("/api/stalls", upload.single('image'), async (req, res) => {
+
+  
   try {
     const { stall_name, address, google_maps_url } = req.body;
     
@@ -288,7 +306,7 @@ app.use((err, req, res, next) => {
 });
 
 // Server startup
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000 ;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

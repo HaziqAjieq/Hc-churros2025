@@ -1,10 +1,14 @@
 "use strict";
 
-var bcrypt = require('bcryptjs');
+var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
 
-var mysql = require('mysql2/promise.js');
+var _promise = _interopRequireDefault(require("mysql2/promise"));
 
-require('dotenv').config();
+var _dotenv = _interopRequireDefault(require("dotenv"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+_dotenv["default"].config();
 
 function createAdmin() {
   var connection, username, password, salt, passwordHash;
@@ -13,7 +17,7 @@ function createAdmin() {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return regeneratorRuntime.awrap(mysql.createConnection({
+          return regeneratorRuntime.awrap(_promise["default"].createConnection({
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
@@ -22,31 +26,33 @@ function createAdmin() {
 
         case 2:
           connection = _context.sent;
-          username = 'Admin-Churros1';
-          password = 'WAN-HC123@';
+          username = ''; // Add your admin username here
+
+          password = ''; // Add your admin password here
+
           _context.next = 7;
-          return regeneratorRuntime.awrap(bcrypt.genSalt(10));
+          return regeneratorRuntime.awrap(_bcryptjs["default"].genSalt(10));
 
         case 7:
           salt = _context.sent;
           _context.next = 10;
-          return regeneratorRuntime.awrap(bcrypt.hash(password, salt));
+          return regeneratorRuntime.awrap(_bcryptjs["default"].hash(password, salt));
 
         case 10:
           passwordHash = _context.sent;
           _context.prev = 11;
           _context.next = 14;
-          return regeneratorRuntime.awrap(connection.execute('INSERT INTO admins(username,password_hash) VALUES (? , ?)', [username, passwordHash]));
+          return regeneratorRuntime.awrap(connection.execute('INSERT INTO admins(username, password_hash) VALUES (?, ?)', [username, passwordHash]));
 
         case 14:
-          console.log('Admin acc created!');
+          console.log('Admin account created successfully!');
           _context.next = 20;
           break;
 
         case 17:
           _context.prev = 17;
           _context.t0 = _context["catch"](11);
-          console.error('Error creating admin acc:', _context.t0);
+          console.error('Error creating admin account:', _context.t0);
 
         case 20:
           _context.prev = 20;
