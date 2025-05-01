@@ -7,8 +7,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { Router } from "express";
+import rateLimit from 'express-rate-limit'
+
+
+
+
 import cookieParser from "cookie-parser";
 
 // For __dirname equivalent in ES modules
@@ -26,6 +32,7 @@ app.use(cors({
 }));
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use(cookieParser());
+
 
 
 // Database connection
@@ -54,10 +61,117 @@ export const pool = mysql.createPool({
 
 // Admin login endpoint
 
+const loginLimiter = rateLimit({
+  windowMs: 50 * 60 * 1000, 
+  
+  message: 'Too many login attempts, please try again later',
+  skipSuccessfulRequests: true
+});
+
+app.post('/api/admin/login' ,loginLimiter , async(req,res) => {
+ const {username,password} = req.body;
+ 
+   if(!username || !password){
+     return res.status(400).json({
+       success: false,
+       message: 'Username and password are required' 
+     })
+   }
+ 
+   try{
+     // 1. Check if admin exists
+     const [adminRows] = await pool.query(
+       'SELECT * FROM admins WHERE username = ?',
+       [username]
+     );
+   
+     if(adminRows.length === 0) {
+       return res.status(401).json({ 
+         success: false,
+         message: 'Invalid credentials' 
+       });
+     }
+   
+     const admin = adminRows[0];
+ 
+      // 2. Verify password
+      const isPasswordValid = await bcrypt.compare(password, admin.password_hash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid credentials' 
+        });
+      }
+  
+      // 3. Create JWT token
+      const token = jwt.sign(
+        { 
+          id: admin.id,
+          username: admin.username,
+          role: 'admin' 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '8h' } // Token expires in 8 hours
+      );
+  
+      // 4. Set secure HTTP-only cookie (alternative to returning JSON)
+      res.cookie('adminToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 8 * 60 * 60 * 1000 // 8 hours
+      });
+  
+      // 5. Return success response
+      res.json({
+        success: true,
+        message: 'Login successful',
+        token, // Also return token if you want to use localStorage
+        admin: {
+          id: admin.id,
+          username: admin.username,
+          // Don't return sensitive data
+        }
+      });
+   }catch (error) {
+     console.error('Login error:', error);
+     res.status(500).json({ 
+       success: false,
+       message: 'Internal server error' 
+     });
+   }
+})
 
 
+const verifyToken = async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false });
+  }
 
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Optional: Fetch fresh admin data from DB
+    const [adminRows] = await pool.query(
+      'SELECT username FROM admins WHERE id = ?',
+      [decoded.id]
+    );
+    
+    if (adminRows.length === 0) {
+      return res.status(401).json({ success: false });
+    }
 
+    res.json({ 
+      success: true,
+      username: adminRows[0].username 
+    });
+  } catch (error) {
+    res.status(401).json({ success: false });
+  }
+};
+app.get('/api/admin/verify-token', verifyToken);
 //___________________________________________________________________________________
 
 
@@ -114,7 +228,7 @@ app.get("/api/stalls", async (req, res) => {
 });
 
 // Get single stall
-app.get("/api/stalls/:id", async (req, res) => {
+app.get("/api/admin/data/stalls/:id", async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT stall_id, stall_name, address, google_maps_url, image_path 
@@ -133,7 +247,7 @@ app.get("/api/stalls/:id", async (req, res) => {
 });
 
 // Add new stall
-app.post("/api/stalls", upload.single('image'), async (req, res) => {
+app.post("/api/admin/data/stalls", upload.single('image'), async (req, res) => {
 
   
   try {
@@ -182,7 +296,7 @@ app.post("/api/stalls", upload.single('image'), async (req, res) => {
 });
 
 // Update stall (with image handling)
-app.put("/api/stalls/:id", upload.single('image'), async (req, res) => {
+app.put("/api/admin/data/stalls/:id", upload.single('image'), async (req, res) => {
   const stallId = req.params.id;
   
   try {
@@ -255,7 +369,7 @@ app.put("/api/stalls/:id", upload.single('image'), async (req, res) => {
 });
 
 // Delete stall
-app.delete("/api/stalls/:id", async (req, res) => {
+app.delete("/api/admin/data/stalls/:id", async (req, res) => {
   const stallId = req.params.id;
   
   try {

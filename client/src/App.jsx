@@ -7,11 +7,16 @@ import Contact from "./pages/Contact";
 import Login from './components/admin/Login'
 import Footer from "./components/Footer";
 import Admin from "./components/admin/Admin";
+import { AuthProvider } from "./components/auth-context/AuthContext";
+import ProtectedRoute from "./components/auth-context/ProtectedRoute";
+import { Navigate } from "react-router";
+
 
 function App() {
   return (
     <>
       <Navbar />
+      <AuthProvider>
       <Routes>
         {/* Main routes */}
         <Route path="/" element={<Home />} />
@@ -24,11 +29,17 @@ function App() {
          {/* Admin routes 
         create auth context only admin can access 
           */}
-           <Route path="/admin/data" element={<Admin />} />
+           <Route path="/admin/data"
+            element={
+            <ProtectedRoute>
+            <Admin />
+            </ProtectedRoute>
+            } />
            
            
-           
+           <Route path="*" element={<Navigate to="/admin/login" replace />} />
       </Routes>
+      </AuthProvider>
       <Footer />
     </>
   );
