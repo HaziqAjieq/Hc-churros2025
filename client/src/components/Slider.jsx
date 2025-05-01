@@ -36,7 +36,7 @@ export function HeroSlider() {
           />
              {/* Dark Overlay */}
         <div
-          className="absolute top-0 left-0 w-full h-full bg-black/30" // Adjust opacity (e.g., 0.5 for 50% darkness)
+          className="absolute top-0 left-0 w-full h-full bg-black/20" // Adjust opacity (e.g., 0.5 for 50% darkness)
         ></div>
               
           </div>

@@ -17,26 +17,26 @@ export default function Navbar(props) {
 
   return (
    <div className="flex items-center justify-center ">
-      <nav className="fixed w-full   z-50  grid grid-cols-8 max-h-auto max-w-7xl mx-auto bg-red lg:rounded-3xl rounded-b-2xl transform-fill mt-23 sm:mt-27 ">
+      <nav className="fixed w-full   z-50  grid grid-cols-8 max-h-auto max-w-7xl mx-auto bg-red lg:rounded-3xl rounded-b-2xl transform-fill mt-23 sm:mt-27 text-white ">
         {/* logoImg */}
         <div className=" col-span-2 col-start-1 flex items-center justify-center ">
           <img src={Logo} alt="" className="max-h-fit size-[7rem]" />
         </div>
-        <div className=" col-start-3  gap-4 hidden  sm:col-span-6 sm:flex sm:items-center sm:justify-center md:col-span-4  md:flex md:justify-center  cursor-pointer ">
-          <ul className="grid grid-cols-3  ">
+        <div className="   hidden  sm:col-span-6 sm:flex sm:items-center sm:justify-center md:col-span-4 md:flex md:justify-center  cursor-pointer ">
+          <ul className="grid grid-cols-3 gap-3 ">
             <Link to="/">
-              <li className="cols-span-1 flex items-center  justify-center text-lg sm:text-xl md:text-2xl ">
+              <li className=" flex items-center  justify-center text-lg sm:text-xl md:text-2xl hover:text-yellow active:text-yellow">
                 Home
               </li>
             </Link>
 
             <Link to="/about">
-              <li className=" cols-span-1  flex items-center  justify-center text-lg sm:text-xl md:text-2xl">
+              <li className="  flex items-center  justify-center text-lg sm:text-xl md:text-2xl hover:text-yellow active:text-yellow">
                 About
               </li>
             </Link>
             <Link to="/location">
-              <li className=" cols-span-1 flex items-center  justify-center text-lg sm:text-xl md:text-2xl">
+              <li className="   flex items-center  justify-center text-lg sm:text-xl md:text-2xl hover:text-yellow active:text-yellow">
                 Locations
               </li>
             </Link>
@@ -64,7 +64,7 @@ export default function Navbar(props) {
             <Link to='/about'>
               <li><h1 className="text-light-gray text-xl">About</h1></li>
             </Link>
-            <Link to='/locations'>
+            <Link to='/location'>
               <li><h1 className="text-light-gray text-xl">Location</h1></li>
             </Link>
 

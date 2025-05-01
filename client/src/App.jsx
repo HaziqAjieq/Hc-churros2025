@@ -1,37 +1,32 @@
-// import axios from "axios";
-// import { useEffect } from "react";
-import { Routes, Route } from "react-router";
+import { Routes, Route } from "react-router"; // Remove BrowserRouter import here
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
-import { About }from "./pages/About";
+import About from "./pages/About";
 import Location from "./pages/Location";
 import Contact from "./pages/Contact";
-import UserLogin from "./Features/Admin/UserLogin";
+import Login from "./Features/Admin/Login";
 import Footer from "./components/Footer";
+import Admin from "./Features/Admin/Admin";
 
 function App() {
-  // const fetchAPI = async () => {
-  //   const response = await axios.get("http://localhost:3000/api");
-  //   console.log(response.data.message);
-  // };
-
-  // useEffect(() => {
-  //   fetchAPI();
-  // }, []);
-
   return (
     <>
       <Navbar />
-
       <Routes>
-        {/* main */}
+        {/* Main routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/location" element={<Location />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<UserLogin />} />
+        
+        {/* Admin routes */}
+        <Route path="/admin/login" element={<Login />} />
+        {/* create auth context only admin can access */}
+           {/*  */}
+           <Route path="/admin/data" element={<Admin />} />
+           {/*  */}
       </Routes>
-    <Footer  />
+      <Footer />
     </>
   );
 }
