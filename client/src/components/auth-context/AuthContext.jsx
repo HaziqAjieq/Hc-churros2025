@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
 
   // Unified authentication check
   useEffect(() => {
+    let isMounted = true; // Track if component is mounted
     const verifyAuth = async () => {
       const token = localStorage.getItem('adminToken');
       
@@ -42,7 +43,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     verifyAuth();
-  }, []);
+    return () => {
+      isMounted = false; // Cleanup on unmount
+    };
+  }, [navigate]);
 
   const login = async (username, password) => {
     try {

@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../auth-context/AuthContext';
-import EditDialog from '../../components/EditDialog';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useAuth } from "../auth-context/AuthContext";
+import EditDialog from "../../components/EditDialog";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {PromoInput} from '../admin/adminComponent/PromoInputs.jsx'
+
 
 export default function Admin() {
   const { admin, loading: authLoading, logout } = useAuth();
@@ -11,11 +14,14 @@ export default function Admin() {
   const [stallList, setStallList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [promos, setPromos] = useState([]);
+  const [promosLoading, setPromosLoading] = useState(true);
+  const API_BASE_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:3000";
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !admin) {
-      navigate('/admin/login');
+      navigate("/admin/login");
     }
   }, [admin, authLoading, navigate]);
 
@@ -27,36 +33,69 @@ export default function Admin() {
       try {
         setIsLoading(true);
         setError(null);
-        
-        const response = await fetch('http://localhost:3000/api/admin/data/stalls', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/admin/data/stalls`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+            },
           }
-        });
+        );
 
         if (!response.ok) {
           if (response.status === 401) {
             logout();
             return;
           }
-          throw new Error('Failed to fetch stalls');
+          throw new Error("Failed to fetch stalls");
         }
 
         const data = await response.json();
         setStallList(data);
       } catch (error) {
-        console.error('Error fetching stalls:', error);
+        console.error("Error fetching stalls:", error);
         setError(error.message);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    fetchStalls();
-  }, [admin, logout]);
 
+    fetchStalls();
+  }, [admin, logout, API_BASE_URL]);
+
+  // Fetch promos
+  const fetchPromos = async () => {
+    try {
+      setPromosLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/api/admin/data/promos`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      setPromos(response.data);
+    } catch (error) {
+      console.error('Error fetching promos:', error);
+      if (error.response?.status === 401) {
+        logout();
+      }
+    } finally {
+      setPromosLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (admin) {
+      fetchPromos();
+    }
+  }, [admin]);
+
+
+  
   // Add new stall with image upload
   const handleAddStall = async (data) => {
+    
+
     try {
       setError(null);
       const formData = new FormData();
@@ -67,28 +106,31 @@ export default function Admin() {
       if (data.imageFile) {
         formData.append('image', data.imageFile);
       }
-  
-      const response = await fetch('http://localhost:3000/api/admin/data/stalls', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
-        body: formData,
-      });
-  
+     
+      const response = await fetch(
+        "http://localhost:3000/api/admin/data/stalls",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+          body: formData,
+        }
+      );
+
       if (!response.ok) {
         if (response.status === 401) {
           logout();
           return;
         }
-        throw new Error('Failed to add stall');
+        throw new Error("Failed to add stall");
       }
-  
+
       const addedStall = await response.json();
       setStallList([...stallList, addedStall]);
       setIsOpen(false);
     } catch (error) {
-      console.error('Error adding stall:', error);
+      console.error("Error adding stall:", error);
       setError(error.message);
     }
   };
@@ -98,40 +140,42 @@ export default function Admin() {
     try {
       setError(null);
       const formData = new FormData();
-      formData.append('stall_name', data.formData.stall_name);
-      formData.append('address', data.formData.address);
-      formData.append('google_maps_url', data.formData.google_maps_url || '');
-      
+      formData.append("stall_name", data.formData.stall_name);
+      formData.append("address", data.formData.address);
+      formData.append("google_maps_url", data.formData.google_maps_url || "");
+
       if (data.imageFile) {
-        formData.append('image', data.imageFile);
+        formData.append("image", data.imageFile);
       }
-  
+
       const response = await fetch(
-        `http://localhost:3000/api/admin/data/stalls/${editStall.stall_id}`, 
+        `http://localhost:3000/api/admin/data/stalls/${editStall.stall_id}`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
           body: formData,
         }
       );
-  
+
       if (!response.ok) {
         if (response.status === 401) {
           logout();
           return;
         }
-        throw new Error('Failed to update stall');
+        throw new Error("Failed to update stall");
       }
-  
+
       const updatedStallData = await response.json();
-      setStallList(stallList.map(stall => 
-        stall.stall_id === editStall.stall_id ? updatedStallData : stall
-      ));
+      setStallList(
+        stallList.map((stall) =>
+          stall.stall_id === editStall.stall_id ? updatedStallData : stall
+        )
+      );
       setEditStall(null);
     } catch (error) {
-      console.error('Error updating stall:', error);
+      console.error("Error updating stall:", error);
       setError(error.message);
     }
   };
@@ -141,12 +185,12 @@ export default function Admin() {
     try {
       setError(null);
       const response = await fetch(
-        `http://localhost:3000/api/admin/data/stalls/${id}`, 
+        `http://localhost:3000/api/admin/data/stalls/${id}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
         }
       );
 
@@ -155,22 +199,30 @@ export default function Admin() {
           logout();
           return;
         }
-        throw new Error('Failed to delete stall');
+        throw new Error("Failed to delete stall");
       }
 
-      setStallList(stallList.filter(stall => stall.stall_id !== id));
+      setStallList(stallList.filter((stall) => stall.stall_id !== id));
     } catch (error) {
-      console.error('Error deleting stall:', error);
+      console.error("Error deleting stall:", error);
       setError(error.message);
     }
   };
 
-  if (authLoading) return <div>Loading authentication...</div>;
-  if (isLoading) return <div>Loading stalls...</div>;
+   if (authLoading) return <div>Loading authentication...</div>;
+  if (isLoading || promosLoading) return <div>Loading data...</div>;
+
+  
 
   return (
     <main className="z-0 text-sm sm:text-base sm:max-w-7xl mx-auto pt-0 sm:px-6">
       <div className="mt-[6.5rem] sm:mt-[7rem] md:mt-[7rem] lg:mt-[7rem]">
+        {/* component for admin to update promo image up to 2 images */}
+        <PromoInput 
+  promos={promos}
+  refreshPromos={fetchPromos}
+/>
+
         <div className="cruid-container pt-10 flex flex-col bg-light-gray h-full w-full">
           {/* Error message display */}
           {error && (
@@ -193,23 +245,23 @@ export default function Admin() {
 
           {/* Add Dialog */}
           {isOpen && (
-            <EditDialog 
+            <EditDialog
               key="add-dialog"
-              onClose={() => setIsOpen(false)} 
+              onClose={() => setIsOpen(false)}
               onSave={handleAddStall}
             />
           )}
 
           {/* Edit Dialog */}
           {editStall && (
-            <EditDialog 
-              key="edit-dialog"  
+            <EditDialog
+              key="edit-dialog"
               stall={editStall}
-              onClose={() => setEditStall(null)} 
+              onClose={() => setEditStall(null)}
               onSave={handleEditStall}
             />
           )}
-          
+
           {/* crud item container*/}
           <div className="w-full h-full mt-4 rounded-2xl">
             {stallList.length === 0 ? (

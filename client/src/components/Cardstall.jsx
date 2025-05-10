@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { stallList } from "../assets/stallImg/stallImg";
+
 import { ViewMoreBtn } from "./Button";
 import { LocationBtn } from "./Button";
 import useStalls from "./hooks/useStalls";
+
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL 
 
 export function Cardstall({ limit = 6 }) {
   const { stalls, loading, error } = useStalls();
@@ -26,7 +28,7 @@ export function Cardstall({ limit = 6 }) {
               {stall.image_path ? (
                 <img
                   key={stall.stall_id}
-                  src={stall.image_path  ? `http://localhost:3000${stall.image_path}` : '/placeholder-image.jpg'}
+                  src={ `${API_BASE_URL}${stall.image_path}`}
                   alt={stall.stall_name}
                   className="w-full h-full object-cover object-center"
                   onError={(e) => {
@@ -67,36 +69,44 @@ export function Cardstall({ limit = 6 }) {
 }
 
 export function CardStallLocation() {
+  const { stalls } = useStalls();
   return (
     <>
       <div className=" space-y-8  sm:p-6 ">
-        {stallList.map((stall, index) => (
+        {stalls.map((stall ,index) => (
           <div
-            key={stall.id}
+            key={stall.stall_id}
             className={`flex flex-col md:flex-row bg-red rounded-4xl overflow-hidden shadow-lg  md:h-[60vh] w-full ${
               index % 2 === 0 ? "" : "md:flex-row-reverse"
             }`}
           >
             {/* Image Section */}
             <div className="w-full md:w-1/2 h-64 md:h-auto">
-              <img
-                src={stall.image}
-                alt={stall.name}
-                className="w-full h-full object-cover object-center"
-              />
+            {stall.image_path ? (
+               <img
+               src={`${API_BASE_URL}${stall.image_path}`}
+               alt={stall.stall_name}
+               className="w-full h-full object-cover object-center"
+             />
+            ) : (
+              <div className="w-full md:w-1/2 h-64 md:h-auto">
+                  <span>No Image</span>
+                </div>
+            )}
+             
             </div>
 
             <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
               {/* stall name */}
               <h1 className="text-3xl md:text-4xl font-bold text-yellow mb-4 text-center md:text-left">
-                {stall.name}
+                {stall.stall_name}
               </h1>
               {/* stall address */}
               <p className="leading-relaxed mb-6 text-center md:text-left text-lg md:text-xl lg:text-2xl">
                 {stall.address}
               </p>
 
-              <LocationBtn mapLink={stall.mapLink} text="Location" />
+              <LocationBtn mapLink={stall.google_maps_url} text="Location" />
             </div>
           </div>
         ))}

@@ -42,30 +42,23 @@ function EditDialog({ stall, onClose, onSave }) {
     setError(null);
 
     try {
-      // Create FormData object for file upload
-      const formDataToSend = new FormData();
       
-      // Append text fields
-      formDataToSend.append('stall_name', formData.stall_name);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('google_maps_url', formData.google_maps_url);
+     
       
-      // Append file if selected
-      if (fileInputRef.current?.files[0]) {
-        formDataToSend.append('image', fileInputRef.current.files[0]);
-      }
-
-      // If editing existing stall, include stall_id
-      await onSave({
-        formData: formData,
-        imageFile: fileInputRef.current?.files[0]
-      });
-
-      // Call onSave with FormData
-      await onSave(formDataToSend);
-      onClose(); // Close after successful save
+      
+      const dataToSend = {
+        formData: {
+          stall_name: formData.stall_name,
+          address: formData.address,
+          google_maps_url: formData.google_maps_url || "",
+        },
+        imageFile: fileInputRef.current?.files[0],
+      };
+  
+      await onSave(dataToSend); // Pass structured data
+      onClose();
     } catch (err) {
-      setError(err.message || 'Failed to save stall');
+      setError(err.message || "Failed to save stall");
     } finally {
       setIsSubmitting(false);
     }

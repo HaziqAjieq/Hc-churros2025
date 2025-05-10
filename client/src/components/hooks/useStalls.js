@@ -3,7 +3,7 @@ import { useEffect , useState } from 'react'
 import axios from 'axios'
 
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL ;
 
 export default function useStalls() {
  

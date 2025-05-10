@@ -33,6 +33,7 @@ function App() {
             element={
             <ProtectedRoute>
             <Admin />
+            {/* add anothe page for admin to add promos */}
             </ProtectedRoute>
             } />
            
