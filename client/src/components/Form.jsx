@@ -1,10 +1,10 @@
 import React from 'react'
 
-export default function Form() {
+export default function Form({text}) {
   return (
     <div className='bg-red flex flex-col items-center justify-center rounded-2xl '>
-      <h1 className='pt-[2rem] text-lg sm:text-xl md:text-2xl lg:text-3xl text-yellow'>Give Us Your Feedback!</h1>
-    <form action="https://formsubmit.co/haziqajieq98@gmail.com" method="POST" className=' flex flex-col gap-5 py-8 w-[80vw] sm:w-[60vw] lg:w-[40vw] text-gray-800'>
+      <h1 className='pt-[2rem] text-lg sm:text-xl md:text-2xl lg:text-3xl text-yellow'>{text}</h1>
+    <form action="https://formsubmit.co/hotandcoldhq@gmail.com" method="POST" className=' flex flex-col gap-5 py-8 w-[80vw] sm:w-[60vw] lg:w-[40vw] text-gray-800'>
       <input className='bg-white rounded-full p-[1rem]' type="text" name='name' placeholder='Your Name' required />
         <div className='flex flex-col md:flex-row gap-2 w-full'>
         <input className='bg-white rounded-full p-[1rem] w-full' type="email" name='email' placeholder='Email' required />
@@ -18,4 +18,3 @@ export default function Form() {
 }
 
 
-// https://formsubmit.co/hotandcoldhq@gmail.com

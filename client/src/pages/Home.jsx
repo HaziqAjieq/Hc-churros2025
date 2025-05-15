@@ -15,8 +15,10 @@ export default function Home() {
         <Hero />
       </div>
       <main className="z-0 text-sm sm:text-base sm:max-w-7xl mx-auto pt-0 sm:px-6 ">
+         <div className="my-5">
+            <Carousel/>
+         </div>
          
-         <Carousel/>
         
 
         <Header title="About Us!" description="asdawqas" />

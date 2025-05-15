@@ -10,6 +10,7 @@ import Admin from "./components/admin/Admin";
 import { AuthProvider } from "./components/auth-context/AuthContext";
 import ProtectedRoute from "./components/auth-context/ProtectedRoute";
 import { Navigate } from "react-router";
+import PromoInput from "./components/admin/adminComponent/PromoInput";
 
 
 function App() {
@@ -19,10 +20,10 @@ function App() {
       <AuthProvider>
       <Routes>
         {/* Main routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/location" element={<Location />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/" element={<><Home /> <Footer title={"Give Us Your Feedback!"}/></>} />
+        <Route path="/about" element={<><About /> <Footer title={"Give Us Your Feedback!"} /></>} />
+        <Route path="/location" element={<><Location /> <Footer title={"Give Us Your Feedback!"} /></>} />
+        <Route path="/contact" element={<Contact /> } />
         
        
         <Route path="/admin/login" element={<Login />} />
@@ -32,7 +33,11 @@ function App() {
            <Route path="/admin/data"
             element={
             <ProtectedRoute>
-            <Admin />
+            <Admin 
+              element={
+                <PromoInput/>
+              }
+            />
             {/* add anothe page for admin to add promos */}
             </ProtectedRoute>
             } />
@@ -41,7 +46,7 @@ function App() {
            <Route path="*" element={<Navigate to="/admin/login" replace />} />
       </Routes>
       </AuthProvider>
-      <Footer />
+      
     </>
   );
 }

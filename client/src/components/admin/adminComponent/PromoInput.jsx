@@ -23,6 +23,7 @@ export default function PromoInput() {
         }
       });
       
+      
       refreshPromos(); // Refresh the list after deletion
       setDeleteError(null);
     } catch (error) {
@@ -60,7 +61,7 @@ export default function PromoInput() {
           Authorization: `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
-      alert('Promo added successfully');
+     
       setNewPromo({ name: '', image: null });
       document.getElementById('image-upload').value = '';
       refreshPromos();
@@ -76,8 +77,8 @@ export default function PromoInput() {
   if (error) return <div className="p-4 text-center text-red-500">Error loading promos: {error}</div>;
 
   return (
-    <div className="p-6 bg-red-500 text-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Manage Carousel Promos</h2>
+    <div className="p-6 bg-red text-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4">Manage Promo Slide</h2>
       
       <form onSubmit={handleSubmit} className="mb-8 p-4 border rounded-lg">
         <h3 className="text-lg font-semibold mb-3">Add New Promo</h3>
@@ -117,46 +118,54 @@ export default function PromoInput() {
       </form>
 
       <div>
-        <h3 className="text-lg font-semibold mb-3">Current Promos</h3>
-        {deleteError && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
-            {deleteError}
-          </div>
-        )}
-        {promos.length === 0 ? (
-          <p className="text-gray-200">No promos available</p>
-        ) : (
-          <ul className="space-y-4">
-            {promos.map((promo) => (
-              <li key={promo.id} className="bg-white text-black p-4 rounded-lg">
-                <div className="flex flex-col">
-                  <div className="mb-2">
-                    <img
-                      src={promo.image_path.startsWith('http') 
-                        ? promo.image_path 
-                        : `${API_BASE_URL}${promo.image_path}`}
-                      alt={promo.name}
-                      className="w-full h-48 object-cover rounded"
-                      onError={(e) => {
-                        e.target.src = '/fallback-image.jpg';
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <h4 className="font-medium text-lg">{promo.name}</h4>
-                    <button
-                      onClick={() => handleDelete(promo.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+  <h3 className="text-lg font-semibold mb-3">Current Promos</h3>
+  {deleteError && (
+    <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+      {deleteError}
+    </div>
+  )}
+  {!Array.isArray(promos) ? (
+    <p className="text-gray-200">Invalid promos data format</p>
+  ) : promos.length === 0 ? (
+    <p className="text-gray-200">No promos available</p>
+  ) : (
+    <ul className="space-y-4">
+      {promos.map((promo) => {
+        if (!promo?.id) return null; // Skip invalid items
+        
+        return (
+          <li key={promo.id} className="bg-white text-black p-4 rounded-lg">
+            <div className="flex flex-col">
+              <div className="mb-2">
+                <img
+                  src={
+                    promo.image_path?.startsWith('http') 
+                      ? promo.image_path 
+                      : `${API_BASE_URL}${promo.image_path || ''}`
+                  }
+                  alt={promo.name || 'Promo image'}
+                  className="w-full h-48 object-cover rounded"
+                  onError={(e) => {
+                    e.target.src = '/fallback-image.jpg';
+                  }}
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h4 className="font-medium text-lg">{promo.name || 'Untitled Promo'}</h4>
+                <button
+                  onClick={() => handleDelete(promo.id)}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</div>
     </div>
   );
 }

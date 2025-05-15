@@ -5,7 +5,7 @@ import mysql from "mysql2/promise";
 import cors from "cors";
 import multer from "multer";
 import path from "path";
-import fs, { unwatchFile } from "fs";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -14,24 +14,34 @@ import rateLimit from "express-rate-limit";
 import module from "module";
 import cookieParser from "cookie-parser";
 
-
 // For __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Serve React static files if in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
+
 // Middleware
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5174",
-    allowedHeaders: ["Content-Type", "Authorization", "X-Debug-Request"],
-    exposedHeaders: ["set-cookie"],
+       origin: ["https://hc-churros.com", "http://localhost:3000"], // Add localhost for development
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
-app.use('/promos', express.static(path.join(__dirname, 'public', 'promos')));
+app.use("/promos", express.static(path.join(__dirname, "public", "promos")));
 
 app.use(cookieParser());
 
@@ -48,16 +58,7 @@ export const pool = mysql.createPool({
 
 //__________________________________________________________________________________
 
-// /backend
-//   ├── config/
-//   │   ├── db.js
-//   │   └── passport.js
-//   ├── models/
-//   │   └── User.js
-//   ├── routes/
-//   │   ├── auth.js
-//   │   └── oauth.js
-//   └── server.js
+
 
 // Admin login endpoint
 
@@ -177,39 +178,40 @@ app.get("/api/admin/verify-token", verifyToken);
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    const uploadPath = path.join(__dirname, 'public', 'uploads');
-   
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(__dirname, "public", "uploads");
+
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
-  filename: function(req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-  }
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
     const mimetype = filetypes.test(file.mimetype);
-    
+
     if (extname && mimetype) {
       return cb(null, true);
     } else {
-      cb(new Error('Error: Images only! (JPEG, JPG, PNG, GIF)'));
+      cb(new Error("Error: Images only! (JPEG, JPG, PNG, GIF)"));
     }
-  }
+  },
 });
-
 
 // API Endpoints
 app.get("/api/stalls", async (req, res) => {
@@ -316,7 +318,8 @@ app.post("/api/admin/data/stalls", upload.single("image"), async (req, res) => {
 });
 
 // Update stall (with image handling)
-app.put("/api/admin/data/stalls/:id",
+app.put(
+  "/api/admin/data/stalls/:id",
   upload.single("image"),
   async (req, res) => {
     const stallId = req.params.id;
@@ -447,102 +450,106 @@ app.delete("/api/admin/data/stalls/:id", async (req, res) => {
 
 // ________________________________________________________________________________________________
 const promosStorage = multer.diskStorage({
-  destination: function (req,file,cb){
-    const uploadPath = path.join(__dirname, 'public' , 'promos');
-    if(!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, {recursive: true});
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(__dirname, "public", "promos");
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
 
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.random(Math.random() * 1e9);
+    const uniqueSuffix = Date.now() + "-" + Math.random(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, 'promo-' + uniqueSuffix + ext);
-  }
-})
+    cb(null, "promo-" + uniqueSuffix + ext);
+  },
+});
 
 const uploadPromos = multer({ storage: promosStorage });
 
 module.exports = uploadPromos;
 
+app.post(
+  "/api/admin/data/promos",
+  uploadPromos.single("image"),
+  async (req, res) => {
+    try {
+      const name = req.body.name;
+      const filePath = `/promos/${req.file.filename}`;
 
-app.post('/api/admin/data/promos' , uploadPromos.single('image') , async (req,res) => {
-  try{
-    const name = req.body.name ;
-    const filePath = `/public/promos/${req.file.filename}`;
+      const [result] = await pool.query(
+        "INSERT INTO promos (name, image_path) VALUES (? , ?)",
+        [name, filePath]
+      );
 
-    const [result] = await pool.query(
-      'INSERT INTO promos (name, image_path) VALUES (? , ?)',
-      [name , filePath]
-    );
-
-    res.json({
-      success: true,
-      message: 'Promo uploaded successfully',
-      data: { id: result.insertId, name, image_path: filePath }
-    })
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({json:'Database insert failed'});
+      res.json({
+        success: true,
+        message: "Promo uploaded successfully",
+        data: { id: result.insertId, name, image_path: filePath },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ json: "Database insert failed" });
+    }
   }
-});
+);
 
-app.get('/api/admin/data/promos', async (req,res) => {
-  try{
-    const [rows] = await pool.query('SELECT * FROM promos');
-    res.json({success:true,promos:rows || []})
-  }catch(err) {
+app.get("/api/admin/data/promos", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM promos");
+    res.json({ success: true, promos: rows || [] });
+  } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, promos: [], error: err.message });
   }
-} )
+});
 
 // rou te to fetch
-app.get('/api/admin/data/promos/:id' , async (req,res) => {
+app.get("/api/admin/data/promos/:id", async (req, res) => {
   const { id } = req.params;
 
-  try{
-    const [rows] = await pool.query('SELECT * FROM promos WHERE id = ?' ,[id]);
+  try {
+    const [rows] = await pool.query("SELECT * FROM promos WHERE id = ?", [id]);
 
-    if(rows.length === 0) {
-      return res.status (404).json({sucess: false,error: 'Promo not found'});
+    if (rows.length === 0) {
+      return res.status(404).json({ sucess: false, error: "Promo not found" });
     }
 
     const promo = rows[0];
-    promo.image_url = `http://localhost:3000${promo.image_path}`;
 
-    res.json({ success: true , data: promo});
+    res.json({ success: true, data: promo });
   } catch (err) {
     console.error(err);
-    res.status(500).json({sucess:false,error : 'Failed to fetch promo'})
+    res.status(500).json({ sucess: false, error: "Failed to fetch promo" });
   }
-})
+});
 
 // Delete route for promo (updated)
-app.delete('/api/admin/data/promos/:id', async (req, res) => {
+app.delete("/api/admin/data/promos/:id", async (req, res) => {
   try {
-    const [promo] = await pool.query('SELECT * FROM promos WHERE id = ?', [req.params.id]);
+    const [promo] = await pool.query("SELECT * FROM promos WHERE id = ?", [
+      req.params.id,
+    ]);
 
     if (!promo.length) {
-      return res.status(404).json({ error: 'Promo not found' });
+      return res.status(404).json({ error: "Promo not found" });
     }
 
     // Extract just the filename from the stored path
-    const filename = promo[0].image_path.replace('/public/promos/', '');
-    const imagePath = path.join(__dirname, 'public', 'promos', filename);
-    
+    const filename = promo[0].image_path.replace("/public/promos/", "");
+    const imagePath = path.join(__dirname, "public", "promos", filename);
+
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
     } else {
       console.warn(`File not found at path: ${imagePath}`);
     }
 
-    await pool.query('DELETE FROM promos WHERE id = ?', [req.params.id]);
+    await pool.query("DELETE FROM promos WHERE id = ?", [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -555,7 +562,7 @@ app.use((err, req, res, next) => {
 });
 
 // Server startup
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

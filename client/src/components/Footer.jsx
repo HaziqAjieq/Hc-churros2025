@@ -2,11 +2,11 @@ import React from "react";
 import Form from "./Form";
 import Logo from "../assets/image/svgviewer-png-output.png";
 
-export default function Footer() {
+export default function Footer({title}) {
   return (
     <div className="bg-red flex flex-col md:gap-[3rem] lg:flex-row mt-10 px-30 items-center  xl:gap-10 text-light-gray  ">
       <div className="lg:grow-0">
-        <Form />
+        <Form text={title}/>
       </div>
       <div className="flex flex-col items-center justify-center gap-5 md:gap-10 lg:grow-1 ">
         {/* logo footer */}
@@ -40,7 +40,7 @@ export default function Footer() {
           </li>
         </ul>
         {/* copyright remark */}
-        <p className="text-center text-sm">Copyright © <a href="">2025 Muhammad Haziq.</a> </p>
+        <p className="text-center text-sm">Copyright © <a href="">2025 MH.</a> </p>
       </div>
     </div>
   );

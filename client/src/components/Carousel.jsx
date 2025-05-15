@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import usePromos from './hooks/usePromos';
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL 
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL ;
 
 const Carousel = () => {
   const { promos, loading, error } = usePromos();
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
-  const autoPlayInterval = 4000; // 4 seconds
+  const autoPlayInterval = 3000; // 3 seconds
 
   // Auto-play functionality
   useEffect(() => {

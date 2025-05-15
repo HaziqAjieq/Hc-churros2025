@@ -3,7 +3,7 @@ import { useAuth } from "../auth-context/AuthContext";
 import EditDialog from "../../components/EditDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {PromoInput} from '../admin/adminComponent/PromoInputs.jsx'
+import PromoInput from "./adminComponent/PromoInput";
 
 
 export default function Admin() {
@@ -16,7 +16,7 @@ export default function Admin() {
   const [error, setError] = useState(null);
   const [promos, setPromos] = useState([]);
   const [promosLoading, setPromosLoading] = useState(true);
-  const API_BASE_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:3000";
+  const API_BASE_URL = import.meta.env.VITE_APP_API_URL ;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -219,9 +219,9 @@ export default function Admin() {
       <div className="mt-[6.5rem] sm:mt-[7rem] md:mt-[7rem] lg:mt-[7rem]">
         {/* component for admin to update promo image up to 2 images */}
         <PromoInput 
-  promos={promos}
-  refreshPromos={fetchPromos}
-/>
+        promos={promos}
+        refreshPromos={fetchPromos}
+        />
 
         <div className="cruid-container pt-10 flex flex-col bg-light-gray h-full w-full">
           {/* Error message display */}
