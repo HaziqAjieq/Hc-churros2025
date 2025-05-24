@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import usePromos from '../../hooks/usePromos';
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL ;
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL  || 'https://api.hc-churros.com/';
 
 
 export default function PromoInput() {

@@ -1,40 +1,52 @@
-import dotenv from "dotenv";
-dotenv.config();
-import express from "express";
-import mysql from "mysql2/promise";
-import cors from "cors";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+// server.mjs - Renamed from server.js to enforce ESM
+require("dotenv").config();
+const express = require("express");
+const mysql = require("mysql2/promise");
+const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
 
-import rateLimit from "express-rate-limit";
-import module from "module";
-import cookieParser from "cookie-parser";
+// Database connection
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  queueLimit: 0,
+});
+
+// Verify DB connection
+pool.getConnection()
+  .then(conn => {
+    console.log('Database connected!');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+  });
+
+
 
 // For __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 const app = express();
 
-// Serve React static files if in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
+
 
 // Middleware
 app.use(express.json());
 app.use(
   cors({
-       origin: ["https://hc-churros.com", "http://localhost:3000"], // Add localhost for development
+       origin: ["https://hc-churros.com"], // Add localhost for development
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -45,19 +57,16 @@ app.use("/promos", express.static(path.join(__dirname, "public", "promos")));
 
 app.use(cookieParser());
 
-// Database connection
-export const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  queueLimit: 0,
-});
+
 
 //__________________________________________________________________________________
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    db: pool.pool._freeConnections.length > 0 ? 'connected' : 'disconnected'
+  });
+});
 
 
 // Admin login endpoint
@@ -467,7 +476,7 @@ const promosStorage = multer.diskStorage({
 
 const uploadPromos = multer({ storage: promosStorage });
 
-module.exports = uploadPromos;
+
 
 app.post(
   "/api/admin/data/promos",
@@ -562,9 +571,10 @@ app.use((err, req, res, next) => {
 });
 
 // Server startup
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
 
 // ________________________________________________________________________________________________

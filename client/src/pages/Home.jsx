@@ -21,7 +21,7 @@ export default function Home() {
          
         
 
-        <Header title="About Us!" description="asdawqas" />
+        <Header title="Tentang Kami!" description="asdawqas" />
         <AboutHero />
 
         <Header title="Apa Yang Membezakan Kami?" description="" />
@@ -66,7 +66,7 @@ export default function Home() {
           </div>
         </div>
 
-        <Header title="Our stall" description="asdawqas" />
+        <Header title="Stall Kami!" description="asdawqas" />
         <Cardstall />
       </main>
     </>

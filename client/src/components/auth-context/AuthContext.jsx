@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
+const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'https://api.hc-churros.com/' ;
+
 
 export const AuthProvider = ({ children }) => {
   const [admin, setAdmin] = useState(null);
@@ -22,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       
       try {
         // Verify token with backend
-        const response = await axios.get('http://localhost:3000/api/admin/verify-token', {
+        const response = await axios.get(`${API_BASE_URL}/api/admin/verify-token`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         

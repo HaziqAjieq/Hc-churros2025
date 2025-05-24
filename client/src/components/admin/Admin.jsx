@@ -16,7 +16,7 @@ export default function Admin() {
   const [error, setError] = useState(null);
   const [promos, setPromos] = useState([]);
   const [promosLoading, setPromosLoading] = useState(true);
-  const API_BASE_URL = import.meta.env.VITE_APP_API_URL ;
+  const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'api.hc-churros.com' ;
 
   // Redirect if not authenticated
   useEffect(() => {
